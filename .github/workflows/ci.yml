@@ -28,3 +28,14 @@ jobs:
       - run: make musl
       - run: python3 tests/integration.py target/x86_64-unknown-linux-musl/release/marriedsh
       - run: python3 tests/background.py target/x86_64-unknown-linux-musl/release/marriedsh
+  musl-aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-musl
+      - run: make musl MUSL_TARGET=aarch64-unknown-linux-musl
+      - run: file target/aarch64-unknown-linux-musl/release/marriedsh | grep -e "ARM aarch64" -e "statically linked"
+      - run: sudo apt-get update && sudo apt-get install -y qemu-user-static
+      - run: qemu-aarch64-static target/aarch64-unknown-linux-musl/release/marriedsh keygen | grep -E '^[0-9a-f]{64}$'
